@@ -1,6 +1,6 @@
 FROM continuumio/miniconda3@sha256:a2e6aa4cd0b6dd696ae9e3e5732943250a977ab3a42b2fe5fb7ef0c19d2d9f16
-LABEL description="Dockerfile containing all the requirements for the report of - " \
-      author="your_email@website.domain"
+LABEL description="Dockerfile containing all the tool dependency for https://github.com/Nik-Zainal-Group/signature.tools.lib " \
+      author="sangram@lifebit.ai"
 
 ARG ENV_NAME="base"
 
