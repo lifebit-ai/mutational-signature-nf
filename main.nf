@@ -176,7 +176,7 @@ process obtain_pipeline_metadata {
   '''
 }
 
-process step_1 {
+process signature_fit {
     tag "$sample_name"
     label 'low_memory'
     publishDir "${params.outdir}", mode: 'copy'
@@ -190,8 +190,7 @@ process step_1 {
 
     script:
     """
-    run.sh
-    head $input_file > input_file_head.txt
+    /signature.tools.lib.dev/scripts/signatureFit -h
     """
   }
 
