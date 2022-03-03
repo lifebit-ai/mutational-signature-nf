@@ -186,13 +186,14 @@ process signature_fit {
     file ("${sample_name}_out")
 
     script:
+    bootstrap_option = params.bootstrap ? "--bootstrap" : ""
     """
     touch ${sample_name}_input.txt
     echo "${sample_name}\t${input_file.name}" > ${sample_name}_input.txt
     /signature.tools.lib.dev/scripts/signatureFit \
       --snvtab ${sample_name}_input.txt \
-      --organ Breast \
-      --bootstrap \
+      --organ $params.organ \
+      $bootstrap_option \
       --outdir ${sample_name}_out
     """
   }
