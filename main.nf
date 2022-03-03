@@ -186,7 +186,7 @@ process signature_fit {
     file(run_sh_script) from ch_run_sh_script
     
     output:
-    file "input_file_head.txt" into ch_out
+    //file "input_file_head.txt" into ch_out
 
     script:
     """
@@ -194,37 +194,37 @@ process signature_fit {
     """
   }
 
-process report {
-    publishDir "${params.outdir}/MultiQC", mode: 'copy'
+// process report {
+//     publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
-    input:
-    file(report_dir) from ch_report_dir
-    file(table) from ch_out
+//     input:
+//     file(report_dir) from ch_report_dir
+//     file(table) from ch_out
     
-    output:
-    file "multiqc_report.html" into ch_multiqc_report
+//     output:
+//     file "multiqc_report.html" into ch_multiqc_report
 
-    script:
-    """
-    cp -r ${report_dir}/* .
-    Rscript -e "rmarkdown::render('report.Rmd',params = list(res_table='$table'))"
-    mv report.html multiqc_report.html
-    """
-}
+//     script:
+//     """
+//     cp -r ${report_dir}/* .
+//     Rscript -e "rmarkdown::render('report.Rmd',params = list(res_table='$table'))"
+//     mv report.html multiqc_report.html
+//     """
+// }
 
 
 
 // When the pipeline is run is not run locally
 // Ensure trace report is output in the pipeline results (in 'pipeline_info' folder)
 
-userName = workflow.userName
+// userName = workflow.userName
 
-if ( userName == "ubuntu" || userName == "ec2-user") {
-  workflow.onComplete {
+// if ( userName == "ubuntu" || userName == "ec2-user") {
+//   workflow.onComplete {
 
-  def trace_timestamp = new java.util.Date().format( 'yyyy-MM-dd_HH-mm-ss')
+//   def trace_timestamp = new java.util.Date().format( 'yyyy-MM-dd_HH-mm-ss')
 
-  traceReport = file("/home/${userName}/nf-out/trace.txt")
-  traceReport.copyTo("results/pipeline_info/execution_trace_${trace_timestamp}.txt")
-  }
-}
+//   traceReport = file("/home/${userName}/nf-out/trace.txt")
+//   traceReport.copyTo("results/pipeline_info/execution_trace_${trace_timestamp}.txt")
+//   }
+// }
