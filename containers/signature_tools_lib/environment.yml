@@ -35,3 +35,5 @@ dependencies:
  - r-devtools # for dev and test
  - r-limsolve # after test() failing
  - r-cli>=3.1.0
+ - r-getopt
+ 
