@@ -1,2 +1,2 @@
-sample_name,file_path
-somename,somepath
+sample1	testdata/test_hrdetect_1.snv.simple.txt
+sample2	testdata/test_hrdetect_2.snv.simple.txt

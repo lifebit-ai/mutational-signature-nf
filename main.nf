@@ -116,11 +116,9 @@ ch_report_dir = Channel.value(file("${projectDir}/bin/report"))
 Channel
     .fromPath(params.input)
     .ifEmpty { exit 1, "Cannot find input file : ${params.input}" }
-    .splitCsv(skip:1)
-    .map {sample_name, file_path -> [ sample_name, file_path ] }
+    .splitCsv(sep: '\t', header: false)
+    .map {sample_name, file_path -> [ sample_name, file(file_path) ] }
     .set { ch_input }
-
-
 
 /*-----------
   Processes  
@@ -183,14 +181,19 @@ process signature_fit {
 
     input:
     set val(sample_name), file(input_file) from ch_input
-    file(run_sh_script) from ch_run_sh_script
     
     output:
-    //file "input_file_head.txt" into ch_out
+    file ("${sample_name}_out")
 
     script:
     """
-    /signature.tools.lib.dev/scripts/signatureFit -h
+    touch ${sample_name}_input.txt
+    echo "${sample_name}\t${input_file.name}" > ${sample_name}_input.txt
+    /signature.tools.lib.dev/scripts/signatureFit \
+      --snvtab ${sample_name}_input.txt \
+      --organ Breast \
+      --bootstrap \
+      --outdir ${sample_name}_out
     """
   }
 
