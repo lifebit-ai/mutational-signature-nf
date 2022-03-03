@@ -49,11 +49,14 @@ def summary = [:]
 
 if (workflow.revision) summary['Pipeline Release'] = workflow.revision
 
-summary['Output dir']                                  = params.outdir
-summary['Launch dir']                                  = workflow.launchDir
-summary['Working dir']                                 = workflow.workDir
-summary['Script dir']                                  = workflow.projectDir
-summary['User']                                        = workflow.userName
+summary['Launch dir']                                   = workflow.launchDir
+summary['Working dir']                                  = workflow.workDir
+summary['Script dir']                                   = workflow.projectDir
+summary['User']                                         = workflow.userName
+summary['Input']                                        = params.input
+summary['Output dir']                                   = params.outdir
+summary['organ']                                        = params.organ
+summary['bootstrap']                                    = params.bootstrap
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
 log.info "-\033[2m--------------------------------------------------\033[0m-"
