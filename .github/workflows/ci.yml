@@ -24,3 +24,8 @@ jobs:
       - name: Basic workflow tests
         run: |
           nextflow run ${GITHUB_WORKSPACE} --config conf/test.config
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: upload-nf-work-dir
+          path: ${GITHUB_WORKSPACE}/work/
