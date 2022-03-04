@@ -1,2 +1,2 @@
-sample1	testdata/test_hrdetect_1.snv.simple.txt
-sample2	testdata/test_hrdetect_2.snv.simple.txt
+sample1	s3://lifebit-featured-datasets/pipelines/mutational-signature-nf/snv/tsv/test_hrdetect_2.snv.simple.txt
+sample2	s3://lifebit-featured-datasets/pipelines/mutational-signature-nf/snv/tsv/test_hrdetect_2.snv.simple.txt
