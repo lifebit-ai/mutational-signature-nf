@@ -4,5 +4,13 @@ channels:
  - bioconda
  - r
 dependencies:
- - r-devtools # for dev and test
- 
+ - r-devtools
+ - bioconductor-variantannotation
+ - bioconductor-summarizedexperiment
+ - bioconductor-biocgenerics
+ - bioconductor-genomeinfodb
+ - bioconductor-bsgenome
+ - bioconductor-genomicranges
+ - bioconductor-iranges
+ - r-getopt
+ - r-stringr
