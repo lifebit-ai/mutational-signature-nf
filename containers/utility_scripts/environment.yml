@@ -1,0 +1,8 @@
+name: utility_scripts
+channels:
+ - conda-forge
+ - bioconda
+ - r
+dependencies:
+ - r-devtools # for dev and test
+ 
