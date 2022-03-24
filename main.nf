@@ -177,27 +177,48 @@ process obtain_pipeline_metadata {
   '''
 }
 
-process signature_fit {
+process prepare_vcf {
     tag "$sample_name"
-    label 'low_memory'
     publishDir "${params.outdir}", mode: 'copy'
 
     input:
-    set val(sample_name), file(input_file) from ch_input
+    set val(sample_name), file(vcf_file) from ch_input
     
     output:
-    file ("${sample_name}_out")
+    set val(sample_name), file("${sample_name}_prepareDataOutput") into ch_prepared_data
+
+    script:
+    """
+    touch ${sample_name}_input.txt
+    echo "${sample_name}\t${vcf_file.name}" > ${sample_name}_input.txt
+
+    /utility.scripts/prepareData/prepareData.R \
+      --strelkasnv ${sample_name}_input.txt \
+      --genomev $params.genome_version \
+      --outdir ${sample_name}_prepareDataOutput
+    """
+}
+
+process signature_fit {
+    tag "$sample_name"
+    publishDir "${params.outdir}", mode: 'copy'
+
+    input:
+    set val(sample_name), file(prepared_data) from ch_prepared_data
+    
+    output:
+    file ("${sample_name}_signature_fit_out")
 
     script:
     bootstrap_option = params.bootstrap ? "--bootstrap" : ""
     """
-    touch ${sample_name}_input.txt
-    echo "${sample_name}\t${input_file.name}" > ${sample_name}_input.txt
+    cut -f1-2 $prepared_data/analysisTable_hrDetect.tsv | tail -n +2 > $prepared_data/analysisTable_hrDetect_new.tsv
     /signature.tools.lib.dev/scripts/signatureFit \
-      --snvtab ${sample_name}_input.txt \
+      --snvvcf $prepared_data/analysisTable_hrDetect_new.tsv \
+      --genomev $params.genome_version \
       --organ $params.organ \
       $bootstrap_option \
-      --outdir ${sample_name}_out
+      --outdir ${sample_name}_signature_fit_out
     """
   }
 
