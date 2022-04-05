@@ -188,6 +188,7 @@ process prepare_vcf {
     set val(sample_name), file("${sample_name}_prepareDataOutput") into ch_prepared_data
 
     script:
+    bootstrap_option = params.bootstrap ? "--bootstrap" : ""
     """
     touch ${sample_name}_input.txt
     echo "${sample_name}\t${vcf_file.name}" > ${sample_name}_input.txt
