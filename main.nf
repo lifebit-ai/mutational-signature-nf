@@ -177,15 +177,16 @@ process obtain_pipeline_metadata {
   '''
 }
 
-process prepare_vcf {
+process detect_vcf_origin_tool {
     tag "$sample_name"
+    label 'utility_scripts'
     publishDir "${params.outdir}", mode: 'copy'
 
     input:
     set val(sample_name), file(vcf_file) from ch_input
     
     output:
-    set val(sample_name), file("${sample_name}_prepareDataOutput"), env(vcf_generation_tool) into ch_prepared_data
+    set val(sample_name), file("${sample_name}_input.txt"), file(vcf_file), env(vcf_generation_tool) into ch_detect_vcf_origin_tool
 
     script:
     """
@@ -194,24 +195,10 @@ process prepare_vcf {
 
     if grep -q "manta" $vcf_file; then
       vcf_generation_tool="manta"
-      /utility.scripts/prepareData/prepareData.R \
-        --manta ${sample_name}_input.txt \
-        --mantapass \
-        --mantapr 8 \
-        --genomev $params.genome_version \
-        --outdir ${sample_name}_prepareDataOutput
     elif grep -q "strelka somatic snv calls" $vcf_file; then
       vcf_generation_tool="strelka_snv"
-      /utility.scripts/prepareData/prepareData.R \
-        --strelkasnv ${sample_name}_input.txt \
-        --genomev $params.genome_version \
-        --outdir ${sample_name}_prepareDataOutput
     elif grep -q "strelka somatic indel calls" $vcf_file; then
       vcf_generation_tool="strelka_indel"
-      /utility.scripts/prepareData/prepareData.R \
-        --strelkasnv ${sample_name}_input.txt \
-        --genomev $params.genome_version \
-        --outdir ${sample_name}_prepareDataOutput
     else
       "The VCF needs to be coming from strelka or manta"
       exit 1
@@ -219,8 +206,34 @@ process prepare_vcf {
     """
 }
 
+process prepare_vcf {
+    tag "$sample_name"
+    label 'utility_scripts'
+    publishDir "${params.outdir}", mode: 'copy'
+
+    input:
+    set val(sample_name), file(input_tsv), file(vcf_file), val(vcf_generation_tool) from ch_detect_vcf_origin_tool
+    
+    output:
+    set val(sample_name), file("${sample_name}_prepareDataOutput"), val(vcf_generation_tool) into ch_prepared_data
+
+    script:
+    if(vcf_generation_tool == "manta"){
+      input_cmd = "--manta $input_tsv --mantapass --mantapr 8"
+    }else if (vcf_generation_tool == "strelka_snv" || vcf_generation_tool == "strelka_indel"){
+      input_cmd = "--strelkasnv $input_tsv"
+    }
+    """
+    /utility.scripts/prepareData/prepareData.R \
+      $input_cmd \
+      --genomev $params.genome_version \
+      --outdir ${sample_name}_prepareDataOutput
+    """
+}
+
 process signature_fit {
     tag "$sample_name"
+    label 'signature_tool_lib'
     publishDir "${params.outdir}", mode: 'copy'
 
     input:
