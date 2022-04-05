@@ -185,17 +185,37 @@ process prepare_vcf {
     set val(sample_name), file(vcf_file) from ch_input
     
     output:
-    set val(sample_name), file("${sample_name}_prepareDataOutput") into ch_prepared_data
+    set val(sample_name), file("${sample_name}_prepareDataOutput"), env(vcf_generation_tool) into ch_prepared_data
 
     script:
     """
     touch ${sample_name}_input.txt
     echo "${sample_name}\t${vcf_file.name}" > ${sample_name}_input.txt
 
-    /utility.scripts/prepareData/prepareData.R \
-      --strelkasnv ${sample_name}_input.txt \
-      --genomev $params.genome_version \
-      --outdir ${sample_name}_prepareDataOutput
+    if grep -q "manta" $vcf_file; then
+      vcf_generation_tool="manta"
+      /utility.scripts/prepareData/prepareData.R \
+        --manta ${sample_name}_input.txt \
+        --mantapass \
+        --mantapr 8 \
+        --genomev $params.genome_version \
+        --outdir ${sample_name}_prepareDataOutput
+    elif grep -q "strelka somatic snv calls" $vcf_file; then
+      vcf_generation_tool="strelka_snv"
+      /utility.scripts/prepareData/prepareData.R \
+        --strelkasnv ${sample_name}_input.txt \
+        --genomev $params.genome_version \
+        --outdir ${sample_name}_prepareDataOutput
+    elif grep -q "strelka somatic indel calls" $vcf_file; then
+      vcf_generation_tool="strelka_indel"
+      /utility.scripts/prepareData/prepareData.R \
+        --strelkasnv ${sample_name}_input.txt \
+        --genomev $params.genome_version \
+        --outdir ${sample_name}_prepareDataOutput
+    else
+      "The VCF needs to be coming from strelka or manta"
+      exit 1
+    fi
     """
 }
 
@@ -204,19 +224,31 @@ process signature_fit {
     publishDir "${params.outdir}", mode: 'copy'
 
     input:
-    set val(sample_name), file(prepared_data) from ch_prepared_data
+    set val(sample_name), file(prepared_data), val(vcf_generation_tool) from ch_prepared_data
     
     output:
     file ("${sample_name}_signature_fit_out")
 
     script:
     bootstrap_option = params.bootstrap ? "--bootstrap" : ""
+    if(vcf_generation_tool == "manta"){
+      input_param = "--svbedpe"
+      fit_methond_cmd = '--fitmethod "Fit"'
+    }else if (vcf_generation_tool == "strelka_snv" || vcf_generation_tool == "strelka_indel"){
+      input_param = "--snvvcf"
+      fit_methond_cmd = ""
+    }
     """
-    cut -f1-2 $prepared_data/analysisTable_hrDetect.tsv | tail -n +2 > $prepared_data/analysisTable_hrDetect_new.tsv
+    if [[ "$vcf_generation_tool" == "strelka_indel" ]]; then
+      cut -f1,3 $prepared_data/analysisTable_hrDetect.tsv | tail -n +2 > $prepared_data/analysisTable_hrDetect_new.tsv
+    else
+      cut -f1-2 $prepared_data/analysisTable_hrDetect.tsv | tail -n +2 > $prepared_data/analysisTable_hrDetect_new.tsv
+    fi
     /signature.tools.lib.dev/scripts/signatureFit \
-      --snvvcf $prepared_data/analysisTable_hrDetect_new.tsv \
+      $input_param $prepared_data/analysisTable_hrDetect_new.tsv \
       --genomev $params.genome_version \
       --organ $params.organ \
+      $fit_methond_cmd \
       $bootstrap_option \
       --outdir ${sample_name}_signature_fit_out
     """
