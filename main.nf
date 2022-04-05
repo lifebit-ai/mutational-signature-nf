@@ -252,6 +252,7 @@ process signature_fit {
       fit_methond_cmd = ""
     }
     """
+    # TODO - Improve this with https://csvkit.readthedocs.io/en/latest/
     if [[ "$vcf_generation_tool" == "strelka_indel" ]]; then
       cut -f1,3 $prepared_data/analysisTable_hrDetect.tsv | tail -n +2 > $prepared_data/analysisTable_hrDetect_new.tsv
     else
