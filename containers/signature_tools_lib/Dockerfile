@@ -1,6 +1,6 @@
 FROM continuumio/miniconda3@sha256:a2e6aa4cd0b6dd696ae9e3e5732943250a977ab3a42b2fe5fb7ef0c19d2d9f16
-LABEL description="Dockerfile containing all the requirements for the report of - " \
-      author="your_email@website.domain"
+LABEL description="Dockerfile containing all the tool dependency for https://github.com/Nik-Zainal-Group/signature.tools.lib " \
+      author="sangram@lifebit.ai"
 
 ARG ENV_NAME="base"
 
@@ -18,3 +18,10 @@ RUN conda env export --name ${ENV_NAME} > ${ENV_NAME}_exported.yml
 # Initialise bash for conda
 RUN conda init bash
 
+# Downloaded https://github.com/Nik-Zainal-Group/signature.tools.lib.dev - commit - 1e5832672a62f9ac9c4c36bc47b76e4ba6206d05
+# TODO - Pull and checkout them direcrly from github - Right now can't due to private repo
+COPY signature.tools.lib.dev /signature.tools.lib.dev
+
+RUN Rscript -e 'devtools::install("/signature.tools.lib.dev")'
+
+ENV PATH /signature_tool_lib/scripts/signatureFit:$PATH

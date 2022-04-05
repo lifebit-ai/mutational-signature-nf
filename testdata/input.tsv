@@ -1,0 +1,2 @@
+sample1	s3://lifebit-featured-datasets/pipelines/mutational-signature-nf/snv/tsv/test_hrdetect_2.snv.simple.txt
+sample2	s3://lifebit-featured-datasets/pipelines/mutational-signature-nf/snv/tsv/test_hrdetect_2.snv.simple.txt

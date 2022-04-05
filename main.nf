@@ -49,11 +49,14 @@ def summary = [:]
 
 if (workflow.revision) summary['Pipeline Release'] = workflow.revision
 
-summary['Output dir']                                  = params.outdir
-summary['Launch dir']                                  = workflow.launchDir
-summary['Working dir']                                 = workflow.workDir
-summary['Script dir']                                  = workflow.projectDir
-summary['User']                                        = workflow.userName
+summary['Launch dir']                                   = workflow.launchDir
+summary['Working dir']                                  = workflow.workDir
+summary['Script dir']                                   = workflow.projectDir
+summary['User']                                         = workflow.userName
+summary['Input']                                        = params.input
+summary['Output dir']                                   = params.outdir
+summary['organ']                                        = params.organ
+summary['bootstrap']                                    = params.bootstrap
 
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
 log.info "-\033[2m--------------------------------------------------\033[0m-"
@@ -116,11 +119,9 @@ ch_report_dir = Channel.value(file("${projectDir}/bin/report"))
 Channel
     .fromPath(params.input)
     .ifEmpty { exit 1, "Cannot find input file : ${params.input}" }
-    .splitCsv(skip:1)
-    .map {sample_name, file_path -> [ sample_name, file_path ] }
+    .splitCsv(sep: '\t', header: false)
+    .map {sample_name, file_path -> [ sample_name, file(file_path) ] }
     .set { ch_input }
-
-
 
 /*-----------
   Processes  
@@ -176,56 +177,61 @@ process obtain_pipeline_metadata {
   '''
 }
 
-process step_1 {
+process signature_fit {
     tag "$sample_name"
     label 'low_memory'
     publishDir "${params.outdir}", mode: 'copy'
 
     input:
     set val(sample_name), file(input_file) from ch_input
-    file(run_sh_script) from ch_run_sh_script
     
     output:
-    file "input_file_head.txt" into ch_out
+    file ("${sample_name}_out")
 
     script:
+    bootstrap_option = params.bootstrap ? "--bootstrap" : ""
     """
-    run.sh
-    head $input_file > input_file_head.txt
+    touch ${sample_name}_input.txt
+    echo "${sample_name}\t${input_file.name}" > ${sample_name}_input.txt
+    /signature.tools.lib.dev/scripts/signatureFit \
+      --snvtab ${sample_name}_input.txt \
+      --organ $params.organ \
+      $bootstrap_option \
+      --outdir ${sample_name}_out
     """
   }
 
-process report {
-    publishDir "${params.outdir}/MultiQC", mode: 'copy'
+// process report {
+//     publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
-    input:
-    file(report_dir) from ch_report_dir
-    file(table) from ch_out
+//     input:
+//     file(report_dir) from ch_report_dir
+//     file(table) from ch_out
     
-    output:
-    file "multiqc_report.html" into ch_multiqc_report
+//     output:
+//     file "multiqc_report.html" into ch_multiqc_report
 
-    script:
-    """
-    cp -r ${report_dir}/* .
-    Rscript -e "rmarkdown::render('report.Rmd',params = list(res_table='$table'))"
-    mv report.html multiqc_report.html
-    """
-}
+//     script:
+//     """
+//     cp -r ${report_dir}/* .
+//     Rscript -e "rmarkdown::render('report.Rmd',params = list(res_table='$table'))"
+//     mv report.html multiqc_report.html
+//     """
+// }
 
 
 
 // When the pipeline is run is not run locally
 // Ensure trace report is output in the pipeline results (in 'pipeline_info' folder)
 
-userName = workflow.userName
+// userName = workflow.userName
 
-if ( userName == "ubuntu" || userName == "ec2-user") {
-  workflow.onComplete {
+// if ( userName == "ubuntu" || userName == "ec2-user") {
+//   workflow.onComplete {
 
-  def trace_timestamp = new java.util.Date().format( 'yyyy-MM-dd_HH-mm-ss')
+//   def trace_timestamp = new java.util.Date().format( 'yyyy-MM-dd_HH-mm-ss')
 
-  traceReport = file("/home/${userName}/nf-out/trace.txt")
-  traceReport.copyTo("results/pipeline_info/execution_trace_${trace_timestamp}.txt")
-  }
-}
+//   traceReport = file("/home/${userName}/nf-out/trace.txt")
+//   traceReport.copyTo("results/pipeline_info/execution_trace_${trace_timestamp}.txt")
+//   }
+// }

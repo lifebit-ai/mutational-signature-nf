@@ -1,6 +1,12 @@
 name: CI test
 # This workflow is triggered on pushes and PRs to the repository.
-on: [push, pull_request]
+on: 
+  pull_request:
+    types: [review_requested, ready_for_review]
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
 
 jobs:
   test:
@@ -18,3 +24,8 @@ jobs:
       - name: Basic workflow tests
         run: |
           nextflow run ${GITHUB_WORKSPACE} --config conf/test.config
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: upload-nf-work-dir
+          path: ${GITHUB_WORKSPACE}/work/

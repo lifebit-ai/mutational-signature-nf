@@ -1,0 +1,39 @@
+name: signature-tools-lib-dev
+channels:
+ - conda-forge
+ - bioconda
+ - r
+dependencies:
+ - bioconductor-variantannotation
+ - bioconductor-bsgenome
+ - bioconductor-bsgenome.hsapiens.ucsc.hg38
+ - bioconductor-bsgenome.hsapiens.1000genomes.hs37d5
+ - bioconductor-bsgenome.mmusculus.ucsc.mm10
+ - bioconductor-bsgenome.cfamiliaris.ucsc.canfam3
+ - bioconductor-summarizedexperiment
+ - bioconductor-biocgenerics
+ - bioconductor-genomeinfodb
+ - bioconductor-genomicranges
+ - bioconductor-iranges
+ - r-nmf
+ - r-foreach
+ - r-doparallel
+ - r-lpsolve
+ - r-ggplot2
+ - r-r.methodss3
+ - r-cluster
+ - r-nnls
+ - r-gensa
+ - r-gmp
+ - r-plyr
+ - r-rcircos
+ - r-scales
+ - r-readr
+ - r-dorng
+ - r-combinat
+ - pdiakumis::r-nnlm # incase this package have issues then - devtools::install_github('linxihui/NNLM')
+ - r-devtools # for dev and test
+ - r-limsolve # after test() failing
+ - r-cli>=3.1.0
+ - r-getopt
+ 
