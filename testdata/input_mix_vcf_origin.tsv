@@ -1,0 +1,2 @@
+manta_sv	s3://lifebit-featured-datasets/pipelines/mutational-signature-nf/testdata/vcf/colo829_somatic_manta.vcf
+sample_strelka_snvs	s3://lifebit-featured-datasets/pipelines/mutational-signature-nf/testdata/vcf/strelka.passed.missense.somatic.snvs.vcf
