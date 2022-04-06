@@ -1,0 +1,16 @@
+name: utility_scripts
+channels:
+ - conda-forge
+ - bioconda
+ - r
+dependencies:
+ - r-devtools
+ - bioconductor-variantannotation
+ - bioconductor-summarizedexperiment
+ - bioconductor-biocgenerics
+ - bioconductor-genomeinfodb
+ - bioconductor-bsgenome
+ - bioconductor-genomicranges
+ - bioconductor-iranges
+ - r-getopt
+ - r-stringr
