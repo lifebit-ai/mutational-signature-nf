@@ -190,7 +190,7 @@ process detect_vcf_origin_tool {
     set val(sample_name), file(vcf_file) from ch_input
     
     output:
-    set val(sample_name), file("${sample_name}_input.txt"), file(vcf_file), env(vcf_generation_tool) into ch_detect_vcf_origin_tool
+    set val(sample_name), file("${sample_name}_input.txt"), file(vcf_file), file(vcf_generation_tool) into ch_detect_vcf_origin_tool
 
     script:
     bootstrap_option = params.bootstrap ? "--bootstrap" : ""
@@ -199,11 +199,11 @@ process detect_vcf_origin_tool {
     echo "${sample_name}\t${vcf_file.name}" > ${sample_name}_input.txt
 
     if grep -q "manta" $vcf_file; then
-      vcf_generation_tool="manta"
+      echo -n "manta" > vcf_generation_tool
     elif grep -q "strelka somatic snv calls" $vcf_file; then
-      vcf_generation_tool="strelka_snv"
+      echo -n "strelka_snv" > vcf_generation_tool 
     elif grep -q "strelka somatic indel calls" $vcf_file; then
-      vcf_generation_tool="strelka_indel"
+      echo -n "strelka_indel" > vcf_generation_tool
     else
       "The VCF needs to be coming from strelka or manta"
       exit 1
@@ -211,13 +211,18 @@ process detect_vcf_origin_tool {
     """
 }
 
+// convert the 3rd index of channel array from file to value string
+ch_detect_vcf_origin_tool
+  .map{ it[0..2] + [it[3].text] }
+  .set{ch_detect_vcf_origin_tool_parsed}
+
 process prepare_vcf {
     tag "$sample_name"
     label 'utility_scripts'
     publishDir "${params.outdir}", mode: 'copy'
 
     input:
-    set val(sample_name), file(input_tsv), file(vcf_file), val(vcf_generation_tool) from ch_detect_vcf_origin_tool
+    set val(sample_name), file(input_tsv), file(vcf_file), val(vcf_generation_tool) from ch_detect_vcf_origin_tool_parsed
     
     output:
     set val(sample_name), file("${sample_name}_prepareDataOutput"), val(vcf_generation_tool) into ch_prepared_data
