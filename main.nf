@@ -219,8 +219,9 @@ process prepare_vcf {
     set val(sample_name), file("${sample_name}_prepareDataOutput"), val(vcf_generation_tool) into ch_prepared_data
 
     script:
+    preparedata_options = params.preparedata_options ? params.preparedata_options : ""
     if(vcf_generation_tool == "manta"){
-      input_cmd = "--manta $input_tsv --mantapass --mantapr 8"
+      input_cmd = "--manta $input_tsv --mantapass"
     }
     if (vcf_generation_tool == "strelka_snv"){
       input_cmd = "--strelkasnv $input_tsv"
@@ -235,7 +236,8 @@ process prepare_vcf {
     /utility.scripts/prepareData/prepareData.R \
       $input_cmd \
       --genomev $params.genome_version \
-      --outdir ${sample_name}_prepareDataOutput
+      --outdir ${sample_name}_prepareDataOutput \
+      $preparedata_options
     """
 }
 
@@ -252,6 +254,7 @@ process signature_fit {
 
     script:
     bootstrap_option = params.bootstrap ? "--bootstrap" : ""
+    signaturefit_options = params.signaturefit_options ? params.signaturefit_options : ""
     if(vcf_generation_tool == "manta"){
       input_param = "--svbedpe"
       fit_methond_cmd = '--fitmethod "Fit"'
@@ -279,6 +282,7 @@ process signature_fit {
       --organ $params.organ \
       $fit_methond_cmd \
       $bootstrap_option \
-      --outdir ${sample_name}_signature_fit_out
+      --outdir ${sample_name}_signature_fit_out \
+      $signaturefit_options
     """
   }
