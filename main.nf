@@ -221,8 +221,15 @@ process prepare_vcf {
     script:
     if(vcf_generation_tool == "manta"){
       input_cmd = "--manta $input_tsv --mantapass --mantapr 8"
-    }else if (vcf_generation_tool == "strelka_snv" || vcf_generation_tool == "strelka_indel"){
+    }
+    if (vcf_generation_tool == "strelka_snv"){
       input_cmd = "--strelkasnv $input_tsv"
+    }
+    if (vcf_generation_tool == "strelka_indel"){
+      exit 1, "strelka indel will be supported soon"
+    }
+    if (!vcf_generation_tool == "manta" || !vcf_generation_tool == "strelka_snv" || !vcf_generation_tool == "strelka_indel"){
+      exit 1, "Currently accepted VCF file from the tool - manta and strelka"
     }
     """
     /utility.scripts/prepareData/prepareData.R \
@@ -248,9 +255,16 @@ process signature_fit {
     if(vcf_generation_tool == "manta"){
       input_param = "--svbedpe"
       fit_methond_cmd = '--fitmethod "Fit"'
-    }else if (vcf_generation_tool == "strelka_snv" || vcf_generation_tool == "strelka_indel"){
+    }
+    if (vcf_generation_tool == "strelka_snv"){
       input_param = "--snvvcf"
-      fit_methond_cmd = ""
+      fit_methond_cmd = '--fitmethod "FitMS"'
+    }
+    if (vcf_generation_tool == "strelka_indel"){
+      exit 1, "strelka indel will be supported soon"
+    }
+    if (!vcf_generation_tool == "manta" || !vcf_generation_tool == "strelka_snv" || !vcf_generation_tool == "strelka_indel"){
+      exit 1, "Currently accepted VCF file from the tool - manta and strelka"
     }
     """
     # TODO - Improve this with https://csvkit.readthedocs.io/en/latest/
