@@ -1,1 +1,2 @@
+sample_name	vcf_file_path
 sample_strelka_indels	s3://lifebit-featured-datasets/pipelines/mutational-signature-nf/testdata/vcf/strelka.passed.coding.somatic.indels.vcf

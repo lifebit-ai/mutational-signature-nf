@@ -1,1 +1,2 @@
+sample_name	vcf_file_path
 manta_sv	s3://lifebit-featured-datasets/pipelines/mutational-signature-nf/testdata/vcf/colo829_somatic_manta.vcf

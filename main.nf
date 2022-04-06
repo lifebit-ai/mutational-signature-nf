@@ -119,8 +119,12 @@ ch_report_dir = Channel.value(file("${projectDir}/bin/report"))
 Channel
     .fromPath(params.input)
     .ifEmpty { exit 1, "Cannot find input file : ${params.input}" }
-    .splitCsv(sep: '\t', header: false)
-    .map {sample_name, file_path -> [ sample_name, file(file_path) ] }
+    .splitCsv(sep: '\t', header: true)
+    .map { row -> 
+      def sample_name = row.sample_name
+      def vcf_file_path = row.vcf_file_path
+      [sample_name, file(vcf_file_path)]
+    }
     .set { ch_input }
 
 /*-----------
