@@ -189,6 +189,7 @@ process detect_vcf_origin_tool {
     set val(sample_name), file("${sample_name}_input.txt"), file(vcf_file), env(vcf_generation_tool) into ch_detect_vcf_origin_tool
 
     script:
+    bootstrap_option = params.bootstrap ? "--bootstrap" : ""
     """
     touch ${sample_name}_input.txt
     echo "${sample_name}\t${vcf_file.name}" > ${sample_name}_input.txt
