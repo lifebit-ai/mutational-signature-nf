@@ -8,7 +8,7 @@ Steps -
 3. Runs the signature-fit function based on organ-specific signatures.
 
 
-## Usgae 
+## Usage 
 
 A basic command to run this pipeline
 
