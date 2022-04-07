@@ -7,7 +7,6 @@ Steps -
 2. Pre-processing and filtration of VCF files based on from which tools they coming from. This also standardise the vcf files going into downstream prcoessing.
 3. Runs the signature-fit function based on organ-specific signatures.
 
-
 ## Usgae 
 
 A basic command to run this pipeline
@@ -45,9 +44,13 @@ Succeeded   : 7
 
 ## Input
 
-A TSV file with two columns 
+A TSV file with two columns with headers
+
+| sample_name | vcf_file_path |
+|---|---|
 
 ```
+sample_name    vcf_file_path
 sample_1    path_to_vcf1
 sample_2    path_to_vcf2
 ```
