@@ -1,0 +1,2 @@
+sample_name	vcf_file_path
+sample_strelka_snvs	s3://lifebit-featured-datasets/pipelines/mutational-signature-nf/testdata/vcf/strelka.passed.missense.somatic.snvs.vcf

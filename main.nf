@@ -119,8 +119,12 @@ ch_report_dir = Channel.value(file("${projectDir}/bin/report"))
 Channel
     .fromPath(params.input)
     .ifEmpty { exit 1, "Cannot find input file : ${params.input}" }
-    .splitCsv(sep: '\t', header: false)
-    .map {sample_name, file_path -> [ sample_name, file(file_path) ] }
+    .splitCsv(sep: '\t', header: true)
+    .map { row -> 
+      def sample_name = row.sample_name
+      def vcf_file_path = row.vcf_file_path
+      [sample_name, file(vcf_file_path)]
+    }
     .set { ch_input }
 
 /*-----------
@@ -177,15 +181,16 @@ process obtain_pipeline_metadata {
   '''
 }
 
-process prepare_vcf {
+process detect_vcf_origin_tool {
     tag "$sample_name"
+    label 'utility_scripts'
     publishDir "${params.outdir}", mode: 'copy'
 
     input:
     set val(sample_name), file(vcf_file) from ch_input
     
     output:
-    set val(sample_name), file("${sample_name}_prepareDataOutput") into ch_prepared_data
+    set val(sample_name), file("${sample_name}_input.txt"), file(vcf_file), file(vcf_generation_tool) into ch_detect_vcf_origin_tool
 
     script:
     bootstrap_option = params.bootstrap ? "--bootstrap" : ""
@@ -193,32 +198,100 @@ process prepare_vcf {
     touch ${sample_name}_input.txt
     echo "${sample_name}\t${vcf_file.name}" > ${sample_name}_input.txt
 
+    if grep -q "manta" $vcf_file; then
+      echo -n "manta" > vcf_generation_tool
+    elif grep -q "strelka somatic snv calls" $vcf_file; then
+      echo -n "strelka_snv" > vcf_generation_tool 
+    elif grep -q "strelka somatic indel calls" $vcf_file; then
+      echo -n "strelka_indel" > vcf_generation_tool
+    else
+      "The VCF needs to be coming from strelka or manta"
+      exit 1
+    fi
+    """
+}
+
+// convert the 3rd index of channel array from file to value string
+ch_detect_vcf_origin_tool
+  .map{ it[0..2] + [it[3].text] }
+  .set{ch_detect_vcf_origin_tool_parsed}
+
+process prepare_vcf {
+    tag "$sample_name"
+    label 'utility_scripts'
+    publishDir "${params.outdir}", mode: 'copy'
+
+    input:
+    set val(sample_name), file(input_tsv), file(vcf_file), val(vcf_generation_tool) from ch_detect_vcf_origin_tool_parsed
+    
+    output:
+    set val(sample_name), file("${sample_name}_prepareDataOutput"), val(vcf_generation_tool) into ch_prepared_data
+
+    script:
+    preparedata_options = params.preparedata_options ? params.preparedata_options : ""
+    if(vcf_generation_tool == "manta"){
+      input_cmd = "--manta $input_tsv --mantapass"
+    }
+    if (vcf_generation_tool == "strelka_snv"){
+      input_cmd = "--strelkasnv $input_tsv"
+    }
+    if (vcf_generation_tool == "strelka_indel"){
+      exit 1, "strelka indel will be supported soon"
+    }
+    if (!vcf_generation_tool == "manta" || !vcf_generation_tool == "strelka_snv" || !vcf_generation_tool == "strelka_indel"){
+      exit 1, "Currently accepted VCF file from the tool - manta and strelka"
+    }
+    """
     /utility.scripts/prepareData/prepareData.R \
-      --strelkasnv ${sample_name}_input.txt \
+      $input_cmd \
       --genomev $params.genome_version \
-      --outdir ${sample_name}_prepareDataOutput
+      --outdir ${sample_name}_prepareDataOutput \
+      $preparedata_options
     """
 }
 
 process signature_fit {
     tag "$sample_name"
+    label 'signature_tool_lib'
     publishDir "${params.outdir}", mode: 'copy'
 
     input:
-    set val(sample_name), file(prepared_data) from ch_prepared_data
+    set val(sample_name), file(prepared_data), val(vcf_generation_tool) from ch_prepared_data
     
     output:
     file ("${sample_name}_signature_fit_out")
 
     script:
     bootstrap_option = params.bootstrap ? "--bootstrap" : ""
+    signaturefit_options = params.signaturefit_options ? params.signaturefit_options : ""
+    if(vcf_generation_tool == "manta"){
+      input_param = "--svbedpe"
+      fit_methond_cmd = '--fitmethod "Fit"'
+    }
+    if (vcf_generation_tool == "strelka_snv"){
+      input_param = "--snvvcf"
+      fit_methond_cmd = '--fitmethod "FitMS"'
+    }
+    if (vcf_generation_tool == "strelka_indel"){
+      exit 1, "strelka indel will be supported soon"
+    }
+    if (!vcf_generation_tool == "manta" || !vcf_generation_tool == "strelka_snv" || !vcf_generation_tool == "strelka_indel"){
+      exit 1, "Currently accepted VCF file from the tool - manta and strelka"
+    }
     """
-    cut -f1-2 $prepared_data/analysisTable_hrDetect.tsv | tail -n +2 > $prepared_data/analysisTable_hrDetect_new.tsv
+    # TODO - Improve this with https://csvkit.readthedocs.io/en/latest/
+    if [[ "$vcf_generation_tool" == "strelka_indel" ]]; then
+      cut -f1,3 $prepared_data/analysisTable_hrDetect.tsv | tail -n +2 > $prepared_data/analysisTable_hrDetect_new.tsv
+    else
+      cut -f1-2 $prepared_data/analysisTable_hrDetect.tsv | tail -n +2 > $prepared_data/analysisTable_hrDetect_new.tsv
+    fi
     /signature.tools.lib.dev/scripts/signatureFit \
-      --snvvcf $prepared_data/analysisTable_hrDetect_new.tsv \
+      $input_param $prepared_data/analysisTable_hrDetect_new.tsv \
       --genomev $params.genome_version \
       --organ $params.organ \
+      $fit_methond_cmd \
       $bootstrap_option \
-      --outdir ${sample_name}_signature_fit_out
+      --outdir ${sample_name}_signature_fit_out \
+      $signaturefit_options
     """
   }
