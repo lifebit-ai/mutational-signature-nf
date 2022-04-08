@@ -13,13 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        nxf_ver: ['20.01.0', '']
         vcf_tools: ['test_mix_tools_vcf', 'test_strelka_vcf', 'test_manta_vcf']
     steps:
       - uses: actions/checkout@v3
       - name: Install Nextflow
         run: |
-          export NXF_VER=${{ matrix.nxf_ver }}
+          export NXF_VER=20.01.0
           wget -qO- get.nextflow.io | bash
           sudo mv nextflow /usr/local/bin/
       - name: Basic workflow tests
