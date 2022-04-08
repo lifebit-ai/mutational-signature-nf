@@ -13,7 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        nxf_ver: ['20.01.0', '20.04.0', '']
+        nxf_ver: ['20.01.0', '']
+        vcf_tools: ['test_mix_tools_vcf', 'test_strelka_vcf', 'test_manta_vcf']
     steps:
       - uses: actions/checkout@v3
       - name: Install Nextflow
@@ -23,9 +24,4 @@ jobs:
           sudo mv nextflow /usr/local/bin/
       - name: Basic workflow tests
         run: |
-          nextflow run ${GITHUB_WORKSPACE} --config conf/test.config
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: upload-nf-work-dir
-          path: ${GITHUB_WORKSPACE}/work/
+          nextflow run ${GITHUB_WORKSPACE} --config conf/${{ matrix.vcf_tools }}.config
