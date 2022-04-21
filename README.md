@@ -42,7 +42,18 @@ CPU hours   : (a few seconds)
 Succeeded   : 7
 ```
 
-## Input
+## Parameters
+
+| param | default | description | 
+|---|---|---|
+| `input` | `null` | A TSV file with samples to be analysed. More details [here](#input) |
+| `organ` | `"Breast"` | Which organ-specific signatures will be used in analysis. Complete list can be found [here](https://github.com/Nik-Zainal-Group/signature.tools.lib.dev/blob/dev/scripts/signatureFit#L76-L86) |
+| `bootstrap` | `true` | Request signature fit with bootstrap |
+| `genome_version` | `hg38` | Genome version to use, Options - `hg19` or `hg38` |
+| `signaturefit_options` | `null` | Additional signaturefit options as a string |
+| `preparedata_options` | `null` | Additional preparedata options as a string |
+
+### Input
 
 A TSV file with two columns with headers
 
