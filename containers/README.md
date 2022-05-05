@@ -8,7 +8,7 @@ git clone https://github.com/Nik-Zainal-Group/signature.tools.lib.dev
 cd signature.tools.lib.dev
 git checkout 1e5832672a62f9ac9c4c36bc47b76e4ba6206d05 .
 cd ..
-docker build -t quay.io/lifebitai/utility_scripts:1e58326 .
+docker build -t quay.io/lifebitai/signature_tool_lib:1e58326 .
 ```
 
 ## build `quay.io/lifebitai/utility_scripts`
