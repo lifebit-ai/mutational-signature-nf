@@ -219,7 +219,7 @@ ch_detect_vcf_origin_tool
 process prepare_vcf {
     tag "$sample_name"
     label 'utility_scripts'
-    publishDir "${params.outdir}/prepare_data", mode: 'copy'
+    publishDir "${params.outdir}/${output_path}", mode: 'copy'
 
     input:
     set val(sample_name), file(input_tsv), file(vcf_file), val(vcf_generation_tool) from ch_detect_vcf_origin_tool_parsed
@@ -230,9 +230,11 @@ process prepare_vcf {
     script:
     preparedata_options = params.preparedata_options ? params.preparedata_options : ""
     if(vcf_generation_tool == "manta"){
+      output_path = "sv"
       input_cmd = "--manta $input_tsv --mantapass"
     }
     if (vcf_generation_tool == "strelka_snv"){
+      output_path = "snv"
       input_cmd = "--strelkasnv $input_tsv"
     }
     if (vcf_generation_tool == "strelka_indel"){
