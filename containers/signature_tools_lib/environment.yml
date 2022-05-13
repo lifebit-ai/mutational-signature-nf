@@ -36,4 +36,5 @@ dependencies:
  - r-limsolve # after test() failing
  - r-cli>=3.1.0
  - r-getopt
+ - fontconfig=2.13.96=ha180cfb_0 # fix for R plots font as boxes
  

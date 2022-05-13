@@ -1,10 +1,10 @@
-FROM continuumio/miniconda3@sha256:a2e6aa4cd0b6dd696ae9e3e5732943250a977ab3a42b2fe5fb7ef0c19d2d9f16
+FROM continuumio/miniconda3:4.10.3
 LABEL description="Dockerfile containing all the tool dependency for https://github.com/Nik-Zainal-Group/signature.tools.lib " \
       author="sangram@lifebit.ai"
 
 ARG ENV_NAME="base"
 
-RUN apk add --no-cache bash=5.0.17-r0 procps=3.3.16-r0
+RUN apt-get install bash procps
 
 COPY environment.yml /
 RUN conda env update -n ${ENV_NAME} -f environment.yml && conda clean -a
