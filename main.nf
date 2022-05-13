@@ -184,7 +184,7 @@ process obtain_pipeline_metadata {
 process detect_vcf_origin_tool {
     tag "$sample_name"
     label 'utility_scripts'
-    publishDir "${params.outdir}", mode: 'copy'
+    //publishDir "${params.outdir}", mode: 'copy'
 
     input:
     set val(sample_name), file(vcf_file) from ch_input
@@ -219,7 +219,7 @@ ch_detect_vcf_origin_tool
 process prepare_vcf {
     tag "$sample_name"
     label 'utility_scripts'
-    publishDir "${params.outdir}", mode: 'copy'
+    publishDir "${params.outdir}/prepare_data", mode: 'copy'
 
     input:
     set val(sample_name), file(input_tsv), file(vcf_file), val(vcf_generation_tool) from ch_detect_vcf_origin_tool_parsed
@@ -259,16 +259,19 @@ process signature_fit {
     set val(sample_name), file(prepared_data), val(vcf_generation_tool) from ch_prepared_data
     
     output:
-    file ("${sample_name}_signature_fit_out")
+    file ("sv/${sample_name}_signature_fit_out") optional true
+    file ("snv/${sample_name}_signature_fit_out") optional true
 
     script:
     bootstrap_option = params.bootstrap ? "--bootstrap" : ""
     signaturefit_options = params.signaturefit_options ? params.signaturefit_options : ""
     if(vcf_generation_tool == "manta"){
+      output_path = "sv/${sample_name}_signature_fit_out"
       input_param = "--svbedpe"
       fit_methond_cmd = '--fitmethod "Fit"'
     }
     if (vcf_generation_tool == "strelka_snv"){
+      output_path = "snv/${sample_name}_signature_fit_out"
       input_param = "--snvvcf"
       fit_methond_cmd = '--fitmethod "FitMS"'
     }
@@ -291,7 +294,7 @@ process signature_fit {
       --organ $params.organ \
       $fit_methond_cmd \
       $bootstrap_option \
-      --outdir ${sample_name}_signature_fit_out \
+      --outdir $output_path \
       $signaturefit_options
     """
   }
