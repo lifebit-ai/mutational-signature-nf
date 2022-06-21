@@ -70,3 +70,33 @@ sample_2    path_to_vcf2
 
 * manta
 * strelka
+
+### Supported organs 
+
+For `-O, --organ=ORGAN` option possible values - 
+
+If SIGVERSION is COSMICv2 or COSMICv3.2, then a selection of signatures found in the given organ will be used. Available organs depend on the selected SIGVERSION. For RefSigv1 or RefSigv2 - 
+
+1. Biliary
+2. Bladder
+3. Bone_SoftTissue
+4. Breast
+5. Cervix (v1 only)
+6. CNS
+7. Colorectal
+8. Esophagus
+9. Head_neck
+10. Kidney
+11. Liver
+12. Lung
+13. Lymphoid
+14. NET (v2 only)
+15. Oral_Oropharyngeal (v2 only)
+16. Ovary
+17. Pancreas
+18. Prostate
+19. Skin
+20. Stomach
+21. Uterus
+
+Ref - From [helpmenu](https://github.com/Nik-Zainal-Group/signature.tools.lib.dev/blob/676b1e5e44aab05d788fee53b4113034d24f15f9/scripts/signatureFit#L76-L86)
