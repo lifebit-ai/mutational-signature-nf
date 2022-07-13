@@ -198,11 +198,13 @@ process detect_vcf_origin_tool {
     touch ${sample_name}_input.txt
     echo "${sample_name}\t${vcf_file.name}" > ${sample_name}_input.txt
 
-    if grep -q "manta" $vcf_file; then
+    if bcftools view $vcf_file | grep -q "manta"; then
       echo -n "manta" > vcf_generation_tool
-    elif grep -q "strelka somatic snv calls" $vcf_file; then
-      echo -n "strelka_snv" > vcf_generation_tool 
-    elif grep -q "strelka somatic indel calls" $vcf_file; then
+    elif bcftools view $vcf_file | grep -q "strelka somatic snv calls"; then
+      echo -n "strelka_snv" > vcf_generation_tool
+    elif bcftools view $vcf_file | grep -q "strelka somatic snv"; then
+      echo -n "strelka_snv" > vcf_generation_tool
+    elif bcftools view $vcf_file | grep -q "strelka somatic indel"; then
       echo -n "strelka_indel" > vcf_generation_tool
     else
       "The VCF needs to be coming from strelka or manta"
