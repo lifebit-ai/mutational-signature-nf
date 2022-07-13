@@ -183,7 +183,7 @@ process obtain_pipeline_metadata {
 
 process detect_vcf_origin_tool {
     tag "$sample_name"
-    label 'utility_scripts'
+    label 'awscli_bcftools'
     //publishDir "${params.outdir}", mode: 'copy'
 
     input:
