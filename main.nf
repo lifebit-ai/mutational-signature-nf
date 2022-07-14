@@ -181,6 +181,7 @@ process obtain_pipeline_metadata {
   '''
 }
 
+// based on keywords from inside VCF file headers or the file name itself check file origin and type
 process detect_vcf_origin_tool {
     tag "$sample_name"
     label 'awscli_bcftools'
@@ -204,6 +205,9 @@ process detect_vcf_origin_tool {
       echo -n "strelka_snv" > vcf_generation_tool
     elif bcftools view $vcf_file | grep -q "strelka somatic snv"; then
       echo -n "strelka_snv" > vcf_generation_tool
+    # accomodate the VCF files which doesn't have keyword "strelka somatic snv" inside them but "snv" in its name
+    elif [[ $vcf_file == *"snv"* ]]; then
+      echo -n "strelka_snv" > vcf_generation_tool
     elif bcftools view $vcf_file | grep -q "strelka somatic indel"; then
       echo -n "strelka_indel" > vcf_generation_tool
     else
@@ -218,6 +222,7 @@ ch_detect_vcf_origin_tool
   .map{ it[0..2] + [it[3].text] }
   .set{ch_detect_vcf_origin_tool_parsed}
 
+// prepare/harmonise the data into singular format
 process prepare_vcf {
     tag "$sample_name"
     label 'utility_scripts'
