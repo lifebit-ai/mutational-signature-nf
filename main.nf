@@ -210,7 +210,7 @@ process detect_vcf_origin_tool {
       echo -n "strelka_snv" > vcf_generation_tool
     elif bcftools view $vcf_file | grep -q "strelka somatic snv"; then
       echo -n "strelka_snv" > vcf_generation_tool
-    # accomodate the VCF files which doesn't have keyword "strelka somatic snv" inside them but "snv" in its name
+    # accommodate the VCF files which doesn't have keyword "strelka somatic snv" inside them but "snv" in its name
     elif [[ $vcf_file == *"snv"* ]]; then
       echo -n "strelka_snv" > vcf_generation_tool
     elif bcftools view $vcf_file | grep -q "strelka somatic indel"; then
