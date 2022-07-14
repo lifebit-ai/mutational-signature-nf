@@ -121,7 +121,12 @@ Channel
     .ifEmpty { exit 1, "Cannot find input file : ${params.input}" }
     .splitCsv(sep: '\t', header: false, skip: 1) // independent of header name
     .map { row -> 
-      def sample_name = row[0]
+      if (row[0].isNumber()){
+        // fix: if the first column is totally numeric
+        sample_name = "sample_" + row[0]
+      }else {
+        sample_name = row[0]
+      }
       def vcf_file_path = row[1]
       [sample_name, file(vcf_file_path)]
     }
