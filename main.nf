@@ -119,10 +119,15 @@ ch_report_dir = Channel.value(file("${projectDir}/bin/report"))
 Channel
     .fromPath(params.input)
     .ifEmpty { exit 1, "Cannot find input file : ${params.input}" }
-    .splitCsv(sep: '\t', header: true)
+    .splitCsv(sep: '\t', header: false, skip: 1) // independent of header name
     .map { row -> 
-      def sample_name = row.sample_name
-      def vcf_file_path = row.vcf_file_path
+      if (row[0].isNumber()){
+        // fix: if the first column is totally numeric
+        sample_name = "sample_" + row[0]
+      }else {
+        sample_name = row[0]
+      }
+      def vcf_file_path = row[1]
       [sample_name, file(vcf_file_path)]
     }
     .set { ch_input }
@@ -181,9 +186,10 @@ process obtain_pipeline_metadata {
   '''
 }
 
+// based on keywords from inside VCF file headers or the file name itself check file origin and type
 process detect_vcf_origin_tool {
     tag "$sample_name"
-    label 'utility_scripts'
+    label 'awscli_bcftools'
     //publishDir "${params.outdir}", mode: 'copy'
 
     input:
@@ -198,11 +204,16 @@ process detect_vcf_origin_tool {
     touch ${sample_name}_input.txt
     echo "${sample_name}\t${vcf_file.name}" > ${sample_name}_input.txt
 
-    if grep -q "manta" $vcf_file; then
+    if bcftools view $vcf_file | grep -q "manta"; then
       echo -n "manta" > vcf_generation_tool
-    elif grep -q "strelka somatic snv calls" $vcf_file; then
-      echo -n "strelka_snv" > vcf_generation_tool 
-    elif grep -q "strelka somatic indel calls" $vcf_file; then
+    elif bcftools view $vcf_file | grep -q "strelka somatic snv calls"; then
+      echo -n "strelka_snv" > vcf_generation_tool
+    elif bcftools view $vcf_file | grep -q "strelka somatic snv"; then
+      echo -n "strelka_snv" > vcf_generation_tool
+    # accommodate the VCF files which doesn't have keyword "strelka somatic snv" inside them but "snv" in its name
+    elif [[ $vcf_file == *"snv"* ]]; then
+      echo -n "strelka_snv" > vcf_generation_tool
+    elif bcftools view $vcf_file | grep -q "strelka somatic indel"; then
       echo -n "strelka_indel" > vcf_generation_tool
     else
       "The VCF needs to be coming from strelka or manta"
@@ -216,6 +227,7 @@ ch_detect_vcf_origin_tool
   .map{ it[0..2] + [it[3].text] }
   .set{ch_detect_vcf_origin_tool_parsed}
 
+// prepare/harmonise the data into singular format
 process prepare_vcf {
     tag "$sample_name"
     label 'utility_scripts'
