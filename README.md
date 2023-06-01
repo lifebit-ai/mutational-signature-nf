@@ -100,3 +100,9 @@ If SIGVERSION is COSMICv2 or COSMICv3.2, then a selection of signatures found in
 21. Uterus
 
 Ref - From [helpmenu](https://github.com/Nik-Zainal-Group/signature.tools.lib.dev/blob/676b1e5e44aab05d788fee53b4113034d24f15f9/scripts/signatureFit#L76-L86)
+
+## License Agreements
+
+This pipeline utilizes third-party tools or databases that may have their own license agreements. It is important to acknowledge and comply with the terms and conditions set forth by these dependencies. Please refer to their respective documentation and licenses for more information.
+
+* [signature.tools.lib R package](https://github.com/Nik-Zainal-Group/signature.tools.lib/blob/master/LICENCE)
