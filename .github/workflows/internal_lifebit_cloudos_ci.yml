@@ -1,0 +1,34 @@
+name: CloudOS CI test
+# This workflow is triggered on PRs of type review_requested or ready_for_review, against dev or main
+on:
+   pull_request:
+     types: [ ready_for_review ]
+     branches:
+      - main
+      - dev
+   workflow_dispatch:
+
+jobs:
+  mutational-signature-nf:
+    runs-on: ubuntu-20.04
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Submit mutational-signature-nf job to CloudOS using cloudos-cli
+        id: mutational-signature-nf
+        uses: lifebit-ai/action-cloudos-cli@0.3.3
+        with:
+          apikey:  ${{ secrets.CLOUDOS_TOKEN }}
+          cloudos_url: 'https://stg.sdlc.lifebit.ai'
+          workspace_id: ${{ secrets.CLOUDOS_WORKSPACE_ID }}
+          project_name: 'ci-testing'
+          workflow_name: 'mutational-signature-nf'
+          nextflow_profile: 'test'
+          git_commit: '${{ github.event.pull_request.head.sha }}'
+          job_name: 'test_${{ github.event.pull_request.head.sha }}'
+          instance_type: 't3.small'
+          instance_disk: '40'
+          cost_limit: ${{ secrets.GLOBAL_CLOUDOS_JOB_COST_LIMIT }}
+          cloudos_cli_flags: '--wait-completion --batch'
