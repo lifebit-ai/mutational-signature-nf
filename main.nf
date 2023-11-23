@@ -88,6 +88,15 @@ ch_container          = Channel.of(workflow.container)
 ch_containerEngine    = Channel.of(workflow.containerEngine)
 
 
+def replaceBucket(file, bucket="${params.reference_data_bucket}", pattern="${params.bucket_pattern}") {
+    regexp = ~/(s3:\/\/[a-zA-Z0-9\-]*$pattern)/
+    file = file.toString()
+    if (file =~ regexp) {
+         replace_bucket = (file =~ regexp)[0]
+         file = file.replaceAll(replace_bucket[0], bucket)
+    }
+    return file
+}
 
 /*----------------------------------------------------------------
   Setting up additional variables used for documentation purposes  
@@ -117,7 +126,7 @@ ch_report_dir = Channel.value(file("${projectDir}/bin/report"))
 // Define Channels from input
 
 Channel
-    .fromPath(params.input)
+    .fromPath(replaceBucket(params.input))
     .ifEmpty { exit 1, "Cannot find input file : ${params.input}" }
     .splitCsv(sep: '\t', header: false, skip: 1) // independent of header name
     .map { row -> 
