@@ -126,7 +126,7 @@ ch_report_dir = Channel.value(file("${projectDir}/bin/report"))
 // Define Channels from input
 
 Channel
-    .fromPath(replaceBucket(params.input))
+    .fromPath(params.input)
     .ifEmpty { exit 1, "Cannot find input file : ${params.input}" }
     .splitCsv(sep: '\t', header: false, skip: 1) // independent of header name
     .map { row -> 
@@ -137,7 +137,7 @@ Channel
         sample_name = row[0]
       }
       def vcf_file_path = row[1]
-      [sample_name, file(vcf_file_path)]
+      [sample_name, file(replaceBucket(vcf_file_path))]
     }
     .set { ch_input }
 
