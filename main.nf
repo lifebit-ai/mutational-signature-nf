@@ -88,6 +88,15 @@ ch_container          = Channel.of(workflow.container)
 ch_containerEngine    = Channel.of(workflow.containerEngine)
 
 
+def replaceBucket(file, bucket="${params.reference_data_bucket}", pattern="${params.bucket_pattern}") {
+    regexp = ~/(s3:\/\/[a-zA-Z0-9\-]*$pattern)/
+    file = file.toString()
+    if (file =~ regexp) {
+         replace_bucket = (file =~ regexp)[0]
+         file = file.replaceAll(replace_bucket[0], bucket)
+    }
+    return file
+}
 
 /*----------------------------------------------------------------
   Setting up additional variables used for documentation purposes  
@@ -128,7 +137,7 @@ Channel
         sample_name = row[0]
       }
       def vcf_file_path = row[1]
-      [sample_name, file(vcf_file_path)]
+      [sample_name, file(replaceBucket(vcf_file_path))]
     }
     .set { ch_input }
 

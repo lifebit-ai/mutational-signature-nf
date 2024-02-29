@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - dev
+      - adds-profiles
   workflow_dispatch:
 
 jobs:
@@ -13,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        nxf_ver: ['20.01.0', '']
+        nxf_ver: ['21.04.1', '22.10.4']
         vcf_tools: ['test_mix_tools_vcf', 'test_strelka_vcf', 'test_manta_vcf']
     steps:
       - uses: actions/checkout@v3
